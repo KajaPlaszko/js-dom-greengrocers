@@ -317,6 +317,35 @@ function calculateTotal() {
   total.textContent = `£${totalAmount.toFixed(2)}`;
 }
 
+const addProductButton = document.querySelector('#show-form-btn');
+const productForm = document.querySelector('#product-form');
+
+addProductButton.addEventListener('click', () => {
+  if (productForm.style.display === 'none') {
+    productForm.style.display = 'block';
+  } else {
+    productForm.style.display = 'none';
+  }
+});
+
+productForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  const newItem = {
+    id: document.querySelector('#productId').value,
+    name: document.querySelector('#productName').value,
+    price: parseFloat(document.querySelector('#productPrice').value),
+    type: document.querySelector('#productType').value
+  };
+
+  state.items.push(newItem);
+  renderStoreItems(filter);
+
+  productForm.reset();
+  productForm.style.display = 'none';  
+});
+
+
 renderFilterDropdown();
 renderStoreItems(filter);
 renderCartItems();
