@@ -75,37 +75,75 @@ const cartItemList = document.querySelector('.cart--item-list')
 const total = document.querySelector('.total-number')
 const filterDropdown = document.querySelector('.filter--buttons')
 let filter = ProductTypeEnum.DEFAULT
+const sortDropdown = document.querySelector('.sort--buttons');
+let sortCriteria = 'default';  
+
+function renderSortOptions() {
+  sortDropdown.innerHTML = '';
+
+  const label = document.createElement('label');
+  label.for = 'sorts'
+  label.innerText = 'Sort by:'
+
+  const select = document.createElement('select');
+  select.id = 'sortSelect';
+  select.name = 'sorts'
+
+  const defaultOption = document.createElement('option');
+  defaultOption.value = 'default';
+  defaultOption.innerText = 'Default'
+  select.appendChild(defaultOption)
+
+  const priceOption = document.createElement('option');
+  priceOption.value = 'price';
+  priceOption.innerText = 'Price'
+  select.appendChild(priceOption)
+
+  const alphabetOption = document.createElement('option');
+  alphabetOption.value = 'alphabetically';
+  alphabetOption.innerText = 'Alphabetically'
+  select.appendChild(alphabetOption)
+
+  const applySortButton = document.createElement('button');
+  applySortButton.addEventListener('click', applySortOption);
+  applySortButton.innerText = 'Apply Sort'
+
+  sortDropdown.appendChild(label);
+  sortDropdown.appendChild(select);
+  sortDropdown.appendChild(applySortButton);
+}
+
 
 function renderFilterDropdown() {
   filterDropdown.innerHTML = '';
-
+  
   const label = document.createElement('label');
   label.for = 'filters'
   label.innerText = 'Filter by:'
-
+  
   const select = document.createElement('select');
   select.id = 'selectTEST'
   select.name = 'filters'
-
+  
   const defaultOption = document.createElement('option');
   defaultOption.value = ProductTypeEnum.DEFAULT;
   defaultOption.innerText = 'Default'
   select.appendChild(defaultOption)
-
+  
   const vegetableOption = document.createElement('option');
   vegetableOption.value = ProductTypeEnum.VEGETABLE;
   vegetableOption.innerText = 'Vegetables'
   select.appendChild(vegetableOption)
-
+  
   const fruitOption = document.createElement('option');
   fruitOption.value = ProductTypeEnum.FRUIT;
   fruitOption.innerText = 'Fruits'
   select.appendChild(fruitOption)
-
+  
   const applyFilterButton = document.createElement('button');
   applyFilterButton.addEventListener('click', applyFilterOption);
   applyFilterButton.innerText = 'Apply filter'
-
+  
   filterDropdown.appendChild(label);
   filterDropdown.appendChild(select);
   filterDropdown.appendChild(applyFilterButton);
@@ -114,78 +152,61 @@ function renderFilterDropdown() {
 function applyFilterOption() {
   selectElement = document.querySelector('#selectTEST');
   selectedValue = selectElement.value;
-
+  
   renderStoreItems(selectedValue)
 }
 
+function applySortOption() {
+  const selectElement = document.querySelector('#sortSelect');
+  sortCriteria = selectElement.value;
+
+  renderStoreItems(filter);
+}
+
+function sortItems(items) {
+  if (sortCriteria === 'price') {
+    return items.sort((a, b) => a.price - b.price);
+  } else if (sortCriteria === 'alphabetically') {
+    return items.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return items; 
+}
 function renderStoreItems(filterType) {
   storeItemList.innerHTML = '';
 
-    state.items.forEach((item) => {
-      /*
-        <li>
-          <div class="store--item-icon">
-            <img src="assets/icons/001-beetroot.svg" alt="beetroot" />
-          </div>
+  let filteredItems = state.items.filter((item) => {
+    if (filterType === ProductTypeEnum.DEFAULT) {
+      return true; 
+    }
+    return item.type === filterType;
+  });
 
-          <button>Add to cart</button>
-        </li>
-      */
+  let sortedItems = sortItems(filteredItems);
 
-      if (filterType !== ProductTypeEnum.DEFAULT) {
-        if (item.type === filterType) {
-          const li = document.createElement('li');
+  sortedItems.forEach((item) => {
+    const li = document.createElement('li');
 
-          // div
-          const divIcon = document.createElement('div');
-          divIcon.className = 'store--item-icon';
-          li.appendChild(divIcon);
+    const divIcon = document.createElement('div');
+    divIcon.className = 'store--item-icon';
+    li.appendChild(divIcon);
 
-          // img
-          const img = document.createElement('img');
-          img.src = `assets/icons/${item.id}.svg`;
-          img.alt = item.name;
-          divIcon.appendChild(img);
-          
-          // button
-          const button = document.createElement('button');
-          button.textContent = 'Add to cart';
-          li.appendChild(button);
+    const img = document.createElement('img');
+    img.src = `assets/icons/${item.id}.svg`;
+    img.alt = item.name;
+    divIcon.appendChild(img);
 
-          button.addEventListener('click', () => {
-            addItemToCart(item);
-          });
+    const button = document.createElement('button');
+    button.textContent = 'Add to cart';
+    li.appendChild(button);
 
-          storeItemList.appendChild(li);
-        }
-      } else {
-        const li = document.createElement('li');
-
-        // div
-        const divIcon = document.createElement('div');
-        divIcon.className = 'store--item-icon';
-        li.appendChild(divIcon);
-
-        // img
-        const img = document.createElement('img');
-        img.src = `assets/icons/${item.id}.svg`;
-        img.alt = item.name;
-        divIcon.appendChild(img);
-        
-
-        // button
-        const button = document.createElement('button');
-        button.textContent = 'Add to cart';
-        li.appendChild(button);
-
-        button.addEventListener('click', () => {
-          addItemToCart(item);
-        });
-
-        storeItemList.appendChild(li);
-      }
+    button.addEventListener('click', () => {
+      addItemToCart(item);
     });
+
+    storeItemList.appendChild(li);
+  });
 }
+
 
 function renderCartItems() {
   cartItemList.innerHTML = '';
@@ -300,3 +321,4 @@ renderFilterDropdown();
 renderStoreItems(filter);
 renderCartItems();
 calculateTotal();
+renderSortOptions();
